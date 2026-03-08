@@ -1,0 +1,6 @@
+build.py
+BUILD_SPEC.md
+assets/
+__pycache__/
+*.pyc
+.env

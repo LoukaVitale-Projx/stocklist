@@ -122,10 +122,63 @@ tfoot td { padding: 0.8rem 0.6rem; border-top: 2px solid #001E2E; font-weight: 7
   .card { box-shadow: none; border: 1px solid #e0e3e8; }
   .line-table input { border: none !important; }
 }
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .header { padding: 1.2rem 1rem; }
+  .header h1 { font-size: 1.05rem; letter-spacing: 2px; }
+  .card-head { padding: 0.9rem 1rem; }
   .card-body { padding: 1rem; }
-  .line-table .pct-cell { display: none; }
+
+  /* Stop iOS zooming when a field is focused */
+  .field input, .field select, .line-table input { font-size: 16px; }
+
+  /* Full-width controls */
+  .approach button, .approach-controls .field { min-width: 100%; }
+
+  /* Reflow line-item tables into stacked cards */
+  .line-table, .line-table tbody, .line-table tbody tr, .line-table tbody td { display: block; width: 100%; }
+  .line-table thead { display: none; }
+  .line-table tbody tr {
+    position: relative; border: 1px solid #e0e3e8; border-radius: 10px;
+    margin-bottom: 0.7rem; padding: 0.6rem 2.2rem;
+  }
+  .line-table tbody tr.off { opacity: 0.55; }
+  .line-table tbody td {
+    border: none; padding: 0.3rem 0; display: flex;
+    align-items: center; justify-content: space-between; gap: 1rem; text-align: right;
+  }
+  .line-table tbody td::before {
+    content: attr(data-label); flex: 0 0 auto; text-align: left;
+    font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.5px; color: #8899a6; font-weight: 600;
+  }
+  .line-table td.c-chk, .line-table td.c-del { position: absolute; padding: 0; width: auto; }
+  .line-table td.c-chk { left: 0.55rem; top: 0.7rem; }
+  .line-table td.c-del { right: 0.4rem; top: 0.45rem; }
+  .line-table td.c-chk::before, .line-table td.c-del::before, .line-table td.c-name::before { content: none; }
+  .line-table td.c-name { padding: 0; flex-wrap: wrap; }
+  .line-table td.c-name input { width: 100%; font-weight: 600; border: 1px solid transparent; }
+  .line-table td.c-name input:focus { border-color: #001E2E; }
+  .line-table tbody td input[type="number"] { width: 55%; max-width: 170px; border: 1px solid #CBD2D8; background: #fff; }
+  .line-table tbody td .sub { flex-basis: 100%; text-align: right; }
+  .chk { width: 22px; height: 22px; }
+  .del-btn { font-size: 1.6rem; }
+
+  /* Totals row becomes a dark summary card */
+  .line-table tfoot { display: block; }
+  .line-table tfoot tr {
+    display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.7rem; row-gap: 0.2rem;
+    background: #001E2E; border-radius: 10px; padding: 0.9rem 1rem;
+  }
+  .line-table tfoot td { display: block; border: none; padding: 0; color: #fff; }
+  .line-table tfoot td::before { content: none; }
+  .line-table .f-blank, .line-table tfoot .f-pct { display: none; }
+  .line-table .f-label { flex-basis: 100%; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 1px; color: #8aa0ad; font-weight: 600; }
+  .line-table .f-total { font-size: 1.5rem; font-weight: 700; }
+  .line-table .f-month { font-size: 0.8rem; color: #8aa0ad; }
+  .line-table .f-month::after { content: " / month"; }
+
+  /* Tappable, full-width action buttons */
+  .toolbar { justify-content: stretch !important; }
+  .toolbar .btn { flex: 1 1 auto; justify-content: center; padding: 0.8rem 1rem; }
 }
 </style>
 </head>
@@ -236,12 +289,12 @@ tfoot td { padding: 0.8rem 0.6rem; border-top: 2px solid #001E2E; font-weight: 7
           <tbody id="mediaBody"></tbody>
           <tfoot>
             <tr>
-              <td></td>
-              <td>Total Media Spend</td>
-              <td class="num" id="mediaTotal">—</td>
-              <td class="num" id="mediaMonthly">—</td>
-              <td class="num">100%</td>
-              <td></td>
+              <td class="f-blank"></td>
+              <td class="f-label">Total Media Spend</td>
+              <td class="num f-total" id="mediaTotal">—</td>
+              <td class="num f-month" id="mediaMonthly">—</td>
+              <td class="num f-pct">100%</td>
+              <td class="f-blank"></td>
             </tr>
           </tfoot>
         </table>
@@ -273,12 +326,12 @@ tfoot td { padding: 0.8rem 0.6rem; border-top: 2px solid #001E2E; font-weight: 7
           <tbody id="creativeBody"></tbody>
           <tfoot>
             <tr>
-              <td></td>
-              <td>Total Creative Spend</td>
-              <td></td><td></td>
-              <td class="num" id="creativeTotal">—</td>
-              <td class="num">100%</td>
-              <td></td>
+              <td class="f-blank"></td>
+              <td class="f-label">Total Creative Spend</td>
+              <td class="f-blank"></td><td class="f-blank"></td>
+              <td class="num f-total" id="creativeTotal">—</td>
+              <td class="num f-pct">100%</td>
+              <td class="f-blank"></td>
             </tr>
           </tfoot>
         </table>
@@ -439,13 +492,13 @@ function renderMedia(){
     const tr = document.createElement('tr');
     if(!r.on) tr.className='off';
     tr.innerHTML = `
-      <td><input type="checkbox" class="chk" ${r.on?'checked':''} onchange="upd('media',${i},'on',this.checked)"></td>
-      <td><input type="text" class="desc-input" value="${esc(r.name)}" oninput="upd('media',${i},'name',this.value)">
+      <td class="c-chk"><input type="checkbox" class="chk" ${r.on?'checked':''} onchange="upd('media',${i},'on',this.checked)"></td>
+      <td class="c-name" data-label="Channel"><input type="text" class="desc-input" value="${esc(r.name)}" oninput="upd('media',${i},'name',this.value)">
         ${ editable ? '' : `<span class="sub">allocated ${money(amt)}</span>` }</td>
-      <td class="num"><input type="number" value="${r.amount}" min="0" step="500" oninput="upd('media',${i},'amount',this.value)"></td>
-      <td class="num pct-cell">${money(amt/months)}</td>
-      <td class="num pct-cell">${pct(share)}</td>
-      <td><button class="del-btn" onclick="delRow('media',${i})" title="Remove">&times;</button></td>`;
+      <td class="num c-amount" data-label="Amount"><input type="number" value="${r.amount}" min="0" step="500" oninput="upd('media',${i},'amount',this.value)"></td>
+      <td class="num pct-cell c-month" data-label="Per month">${money(amt/months)}</td>
+      <td class="num pct-cell c-pct" data-label="% of media">${pct(share)}</td>
+      <td class="c-del"><button class="del-btn" onclick="delRow('media',${i})" title="Remove">&times;</button></td>`;
     body.appendChild(tr);
   });
   document.getElementById('mediaTotal').textContent = money(total);
@@ -462,13 +515,13 @@ function renderCreative(){
     const tr = document.createElement('tr');
     if(!r.on) tr.className='off';
     tr.innerHTML = `
-      <td><input type="checkbox" class="chk" ${r.on?'checked':''} onchange="upd('creative',${i},'on',this.checked)"></td>
-      <td><input type="text" class="desc-input" value="${esc(r.name)}" oninput="upd('creative',${i},'name',this.value)"></td>
-      <td class="num"><input type="number" value="${r.unit}" min="0" step="100" oninput="upd('creative',${i},'unit',this.value)"></td>
-      <td class="num"><input type="number" value="${r.qty}" min="0" step="1" oninput="upd('creative',${i},'qty',this.value)"></td>
-      <td class="num line-total">${money(lt)}</td>
-      <td class="num pct-cell">${pct(share)}</td>
-      <td><button class="del-btn" onclick="delRow('creative',${i})" title="Remove">&times;</button></td>`;
+      <td class="c-chk"><input type="checkbox" class="chk" ${r.on?'checked':''} onchange="upd('creative',${i},'on',this.checked)"></td>
+      <td class="c-name" data-label="Deliverable"><input type="text" class="desc-input" value="${esc(r.name)}" oninput="upd('creative',${i},'name',this.value)"></td>
+      <td class="num c-unit" data-label="Unit cost"><input type="number" value="${r.unit}" min="0" step="100" oninput="upd('creative',${i},'unit',this.value)"></td>
+      <td class="num c-qty" data-label="Qty"><input type="number" value="${r.qty}" min="0" step="1" oninput="upd('creative',${i},'qty',this.value)"></td>
+      <td class="num line-total" data-label="Line total">${money(lt)}</td>
+      <td class="num pct-cell c-pct" data-label="% of creative">${pct(share)}</td>
+      <td class="c-del"><button class="del-btn" onclick="delRow('creative',${i})" title="Remove">&times;</button></td>`;
     body.appendChild(tr);
   });
   document.getElementById('creativeTotal').textContent = money(total);

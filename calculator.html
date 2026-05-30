@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjX — Marketing Spend Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Montserrat', sans-serif; background: #f5f6f8; color: #001E2E; -webkit-font-smoothing: antialiased; }
+
+/* Header */
+.header { background: #001E2E; padding: 1.6rem 2rem; text-align: center; }
+.header img { height: 38px; margin-bottom: 0.8rem; }
+.header h1 { color: #fff; font-size: 1.25rem; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; }
+.header .subtitle { color: #CBD2D8; font-size: 0.8rem; font-weight: 300; margin-top: 0.4rem; }
+
+.content { max-width: 1100px; margin: 1.5rem auto 3rem; padding: 0 1rem; }
+
+/* Cards */
+.card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,30,46,0.08); margin-bottom: 1.5rem; overflow: hidden; }
+.card-head { padding: 1.1rem 1.5rem; border-bottom: 1px solid #eef0f3; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.card-head h2 { font-size: 0.95rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #001E2E; }
+.card-head .hint { font-size: 0.72rem; color: #8899a6; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.card-body { padding: 1.5rem; }
+
+/* Project setup grid */
+.setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.1rem; }
+.field { display: flex; flex-direction: column; gap: 0.35rem; }
+.field label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #8899a6; font-weight: 600; }
+.field input, .field select {
+  font-family: 'Montserrat', sans-serif; font-size: 0.95rem; padding: 0.55rem 0.7rem;
+  border: 1px solid #CBD2D8; border-radius: 6px; background: #fff; color: #001E2E; width: 100%;
+}
+.field input:focus, .field select:focus { outline: none; border-color: #001E2E; }
+.field .derived { font-size: 0.95rem; font-weight: 700; padding: 0.55rem 0.7rem; background: #f5f6f8; border-radius: 6px; border: 1px solid #eef0f3; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.4rem; padding: 0 1rem; background: #fff; border-radius: 12px 12px 0 0; border-bottom: 1px solid #eef0f3; flex-wrap: wrap; box-shadow: 0 2px 12px rgba(0,30,46,0.08); }
+.tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 1rem 1.2rem; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #8899a6; cursor: pointer; }
+.tab:hover { color: #001E2E; }
+.tab.active { color: #001E2E; border-bottom-color: #10b981; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.tab-card { border-radius: 0 0 12px 12px; }
+
+/* Tables */
+.line-table { width: 100%; border-collapse: collapse; }
+.line-table th { text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #8899a6; font-weight: 600; padding: 0.5rem 0.6rem; border-bottom: 1px solid #e0e3e8; }
+.line-table th.num, .line-table td.num { text-align: right; }
+.line-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #f0f1f3; font-size: 0.9rem; vertical-align: middle; }
+.line-table tr.off td { opacity: 0.4; }
+.line-table input[type="text"], .line-table input[type="number"] {
+  font-family: 'Montserrat', sans-serif; font-size: 0.88rem; padding: 0.4rem 0.5rem;
+  border: 1px solid transparent; border-radius: 5px; background: transparent; color: #001E2E; width: 100%;
+}
+.line-table input[type="text"]:hover, .line-table input[type="number"]:hover { border-color: #e0e3e8; }
+.line-table input[type="text"]:focus, .line-table input[type="number"]:focus { outline: none; border-color: #001E2E; background: #fff; }
+.line-table input[type="number"] { text-align: right; }
+.line-table .desc-input { font-weight: 600; }
+.line-table .sub { font-size: 0.7rem; color: #8899a6; display: block; }
+.line-table .line-total { font-weight: 700; white-space: nowrap; }
+.line-table .pct-cell { color: #8899a6; font-size: 0.8rem; white-space: nowrap; }
+.chk { width: 18px; height: 18px; accent-color: #10b981; cursor: pointer; }
+.del-btn { background: none; border: none; color: #c0c7ce; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0 0.3rem; }
+.del-btn:hover { color: #ef4444; }
+tfoot td { padding: 0.8rem 0.6rem; border-top: 2px solid #001E2E; font-weight: 700; font-size: 0.95rem; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 0.4rem; background: #001E2E; color: #fff; border: none; text-decoration: none; padding: 0.6rem 1.1rem; border-radius: 6px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+.btn:hover { background: #0a3d5c; }
+.btn.ghost { background: none; border: 1px solid #CBD2D8; color: #8899a6; }
+.btn.ghost:hover { border-color: #001E2E; color: #001E2E; }
+.btn.add { background: none; border: 1px dashed #CBD2D8; color: #8899a6; margin-top: 0.8rem; }
+.btn.add:hover { border-color: #10b981; color: #10b981; }
+.toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+/* Approach selector */
+.approach { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.approach button { flex: 1; min-width: 150px; background: #f5f6f8; border: 1px solid #e0e3e8; border-radius: 8px; padding: 0.7rem; cursor: pointer; font-family: 'Montserrat', sans-serif; text-align: left; }
+.approach button.active { border-color: #10b981; background: #ecfdf5; }
+.approach button .t { font-size: 0.82rem; font-weight: 600; display: block; }
+.approach button .d { font-size: 0.7rem; color: #8899a6; }
+.approach-controls { display: flex; gap: 1.1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1.3rem; }
+.approach-controls .field { min-width: 160px; }
+.hidden { display: none !important; }
+
+/* Summary */
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+.metric { background: #f5f6f8; border-radius: 10px; padding: 1.2rem; border: 1px solid #eef0f3; }
+.metric.dark { background: #001E2E; border-color: #001E2E; }
+.metric .m-label { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 1px; color: #8899a6; font-weight: 600; }
+.metric.dark .m-label { color: #8aa0ad; }
+.metric .m-value { font-size: 1.7rem; font-weight: 700; color: #001E2E; margin-top: 0.3rem; }
+.metric.dark .m-value { color: #fff; }
+.metric .m-sub { font-size: 0.72rem; color: #8899a6; margin-top: 0.2rem; }
+.bar { height: 26px; border-radius: 6px; overflow: hidden; display: flex; margin-top: 0.6rem; background: #eef0f3; }
+.bar .seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.66rem; font-weight: 600; color: #fff; white-space: nowrap; min-width: 0; }
+.bar .seg.media { background: #001E2E; }
+.bar .seg.creative { background: #10b981; }
+.legend { display: flex; gap: 1.2rem; margin-top: 0.6rem; font-size: 0.74rem; color: #5a6b76; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+.breakdown { width: 100%; border-collapse: collapse; margin-top: 1.2rem; }
+.breakdown td { padding: 0.55rem 0.4rem; border-bottom: 1px solid #f0f1f3; font-size: 0.88rem; }
+.breakdown td.num { text-align: right; font-weight: 600; }
+.breakdown tr.total td { border-top: 2px solid #001E2E; border-bottom: none; font-weight: 700; padding-top: 0.8rem; font-size: 1rem; }
+.breakdown .cat { color: #8899a6; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; padding-top: 1rem; }
+
+/* Footer */
+.footer { background: #001E2E; color: #CBD2D8; text-align: center; padding: 2rem; }
+.footer .brand { font-size: 0.75rem; margin-bottom: 0.5rem; }
+.footer .disclaimer { font-size: 0.65rem; color: #8899a6; max-width: 640px; margin: 0.6rem auto 0; line-height: 1.5; }
+.footer a { color: #CBD2D8; }
+
+@media print {
+  body { background: #fff; }
+  .tabs, .toolbar, .approach, .add, .del-btn, .header .subtitle { display: none !important; }
+  .tab-panel { display: block !important; page-break-inside: avoid; }
+  .card { box-shadow: none; border: 1px solid #e0e3e8; }
+  .line-table input { border: none !important; }
+}
+@media (max-width: 600px) {
+  .header { padding: 1.2rem 1rem; }
+  .card-body { padding: 1rem; }
+  .line-table .pct-cell { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="projx-logo.png" alt="ProjX">
+  <h1>Marketing Spend Calculator</h1>
+  <div class="subtitle">Media &amp; creative budgets for project marketing — live estimates on the spot</div>
+</div>
+
+<div class="content">
+
+  <!-- PROJECT SETUP -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Project Setup</h2>
+      <span class="hint">Drives per-lot and % of revenue metrics</span>
+    </div>
+    <div class="card-body">
+      <div class="setup-grid">
+        <div class="field">
+          <label>Project Name</label>
+          <input type="text" id="projName" placeholder="e.g. Harvest, Byron Bay">
+        </div>
+        <div class="field">
+          <label>Product Type</label>
+          <select id="productType">
+            <option>Land Lots</option>
+            <option>Townhomes</option>
+            <option>Apartments</option>
+            <option>House &amp; Land</option>
+            <option>Mixed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>No. of Lots / Units</label>
+          <input type="number" id="numLots" value="40" min="1" step="1">
+        </div>
+        <div class="field">
+          <label>Avg Sale Price</label>
+          <input type="number" id="avgPrice" value="950000" min="0" step="1000">
+        </div>
+        <div class="field">
+          <label>Gross Realisation</label>
+          <div class="derived" id="grossReal">—</div>
+        </div>
+        <div class="field">
+          <label>Campaign Duration (months)</label>
+          <input type="number" id="months" value="12" min="1" step="1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="media">Media Spend</button>
+    <button class="tab" data-tab="creative">Creative Spend</button>
+    <button class="tab" data-tab="summary">Summary</button>
+  </div>
+
+  <!-- MEDIA PANEL -->
+  <div class="tab-panel active" id="panel-media">
+    <div class="card tab-card">
+      <div class="card-head">
+        <h2>Media Spend</h2>
+        <span class="hint">Advertising &amp; campaign budget</span>
+      </div>
+      <div class="card-body">
+        <div class="approach" id="mediaApproach">
+          <button data-mode="lineitems" class="active">
+            <span class="t">Build from line items</span>
+            <span class="d">Set each channel and total it up</span>
+          </button>
+          <button data-mode="percent">
+            <span class="t">% of Gross Realisation</span>
+            <span class="d">Set a target % and split by allocation</span>
+          </button>
+          <button data-mode="fixed">
+            <span class="t">Fixed total budget</span>
+            <span class="d">Enter a cap and split by allocation</span>
+          </button>
+        </div>
+
+        <div class="approach-controls">
+          <div class="field" id="ctrlPercent" style="display:none">
+            <label>Media budget (% of GR)</label>
+            <input type="number" id="mediaPct" value="1.5" min="0" step="0.1">
+          </div>
+          <div class="field" id="ctrlFixed" style="display:none">
+            <label>Total media budget</label>
+            <input type="number" id="mediaFixed" value="500000" min="0" step="1000">
+          </div>
+        </div>
+
+        <table class="line-table" id="mediaTable">
+          <thead>
+            <tr>
+              <th style="width:30px"></th>
+              <th>Channel</th>
+              <th class="num" id="mediaCol3">Amount (total)</th>
+              <th class="num" style="width:90px">/ month</th>
+              <th class="num" style="width:90px">% of media</th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="mediaBody"></tbody>
+          <tfoot>
+            <tr>
+              <td></td>
+              <td>Total Media Spend</td>
+              <td class="num" id="mediaTotal">—</td>
+              <td class="num" id="mediaMonthly">—</td>
+              <td class="num">100%</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        <button class="btn add" onclick="addRow('media')">+ Add channel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATIVE PANEL -->
+  <div class="tab-panel" id="panel-creative">
+    <div class="card tab-card">
+      <div class="card-head">
+        <h2>Creative Spend</h2>
+        <span class="hint">One-off production &amp; brand deliverables</span>
+      </div>
+      <div class="card-body">
+        <table class="line-table" id="creativeTable">
+          <thead>
+            <tr>
+              <th style="width:30px"></th>
+              <th>Deliverable</th>
+              <th class="num" style="width:110px">Unit cost</th>
+              <th class="num" style="width:70px">Qty</th>
+              <th class="num" style="width:120px">Line total</th>
+              <th class="num" style="width:80px">% of creative</th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="creativeBody"></tbody>
+          <tfoot>
+            <tr>
+              <td></td>
+              <td>Total Creative Spend</td>
+              <td></td><td></td>
+              <td class="num" id="creativeTotal">—</td>
+              <td class="num">100%</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        <button class="btn add" onclick="addRow('creative')">+ Add deliverable</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY PANEL -->
+  <div class="tab-panel" id="panel-summary">
+    <div class="card tab-card">
+      <div class="card-head">
+        <h2>Campaign Summary</h2>
+        <span class="hint" id="summaryProj"></span>
+      </div>
+      <div class="card-body">
+        <div class="summary-grid">
+          <div class="metric"><div class="m-label">Media Spend</div><div class="m-value" id="sMedia">—</div><div class="m-sub" id="sMediaMo">—</div></div>
+          <div class="metric"><div class="m-label">Creative Spend</div><div class="m-value" id="sCreative">—</div><div class="m-sub">One-off production</div></div>
+          <div class="metric dark"><div class="m-label">Total Marketing Spend</div><div class="m-value" id="sTotal">—</div><div class="m-sub" id="sTotalPct">—</div></div>
+          <div class="metric"><div class="m-label">Cost per Lot / Unit</div><div class="m-value" id="sPerLot">—</div><div class="m-sub" id="sPerLotN">—</div></div>
+        </div>
+
+        <div class="bar" id="splitBar"></div>
+        <div class="legend">
+          <span><i style="background:#001E2E"></i> Media <b id="sMediaShare" style="margin-left:.3rem"></b></span>
+          <span><i style="background:#10b981"></i> Creative <b id="sCreativeShare" style="margin-left:.3rem"></b></span>
+        </div>
+
+        <table class="breakdown" id="breakdownTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar" style="justify-content:flex-end">
+    <button class="btn ghost" onclick="resetAll()">Reset to defaults</button>
+    <button class="btn ghost" onclick="window.print()">Print / Save PDF</button>
+    <button class="btn" onclick="emailQuote()">Email this estimate</button>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="brand">
+    <strong>ProjX</strong> — Focused. Creative. Results.<br>
+    <a href="mailto:louka@projxaustralia.com.au">louka@projxaustralia.com.au</a>
+  </div>
+  <div class="disclaimer">
+    Figures are indicative estimates for discussion purposes only and exclude GST unless stated. Final media and
+    creative costs are subject to a formal campaign proposal and supplier quotations. All amounts in AUD.
+  </div>
+</div>
+
+<script>
+// ---- Default line items ----------------------------------------------------
+const DEFAULT_MEDIA = [
+  { on:true, name:'Realestate.com.au (Premiere depth listings)', amount:90000 },
+  { on:true, name:'Domain (listings & feature campaign)',        amount:45000 },
+  { on:true, name:'Google Ads (Search & Performance Max)',       amount:60000 },
+  { on:true, name:'Meta (Facebook & Instagram)',                 amount:55000 },
+  { on:true, name:'Programmatic display & YouTube',              amount:35000 },
+  { on:true, name:'Project signage & site hoarding',             amount:40000 },
+  { on:true, name:'Outdoor, print & local press',                amount:30000 },
+  { on:true, name:'EDM & database marketing',                    amount:12000 },
+  { on:true, name:'PR, content & influencer',                    amount:18000 },
+  { on:true, name:'Agency management & ad serving fee',          amount:45000 },
+];
+
+const DEFAULT_CREATIVE = [
+  { on:true, name:'Brand strategy & project naming',          unit:12000, qty:1 },
+  { on:true, name:'Logo & brand identity',                    unit:9000,  qty:1 },
+  { on:true, name:'Brand guidelines & style kit',             unit:4500,  qty:1 },
+  { on:true, name:'3D renders / artist impressions',          unit:3500,  qty:8 },
+  { on:true, name:'Animation / flythrough video',             unit:22000, qty:1 },
+  { on:true, name:'Photography (aerial & lifestyle)',         unit:6500,  qty:1 },
+  { on:true, name:'Project website / landing page',           unit:14000, qty:1 },
+  { on:true, name:'Information memorandum / brochure design',  unit:9500,  qty:1 },
+  { on:true, name:'Floorplans & site plan artwork',           unit:450,   qty:40 },
+  { on:true, name:'Signage & hoarding design',                unit:6000,  qty:1 },
+  { on:true, name:'Display suite branding & fit-out graphics', unit:18000, qty:1 },
+  { on:true, name:'Stationery & sales collateral',            unit:3500,  qty:1 },
+];
+
+const STORE = 'projx-spend-calc-v1';
+let state = load() || freshState();
+
+function freshState(){
+  return {
+    proj:{ name:'', type:'Land Lots', lots:40, price:950000, months:12 },
+    mediaMode:'lineitems', mediaPct:1.5, mediaFixed:500000,
+    media: DEFAULT_MEDIA.map(r=>({...r})),
+    creative: DEFAULT_CREATIVE.map(r=>({...r})),
+  };
+}
+
+function load(){ try{ return JSON.parse(localStorage.getItem(STORE)); }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+
+// ---- Formatting ------------------------------------------------------------
+const fmt0 = new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:0});
+function money(n){ return fmt0.format(Math.round(n||0)); }
+function pct(n){ return (n||0).toFixed(1)+'%'; }
+
+// ---- Derived calcs ---------------------------------------------------------
+function gross(){ return (+state.proj.lots||0) * (+state.proj.price||0); }
+
+function mediaBaseTotal(){
+  // total when in line-items mode (sum of switched-on rows)
+  return state.media.filter(r=>r.on).reduce((s,r)=>s+(+r.amount||0),0);
+}
+function mediaTotal(){
+  if(state.mediaMode==='percent') return gross()*(+state.mediaPct||0)/100;
+  if(state.mediaMode==='fixed')   return +state.mediaFixed||0;
+  return mediaBaseTotal();
+}
+// In percent/fixed modes the line items act as an allocation split of the target budget
+function mediaRowAmount(r, total, allocBase){
+  if(state.mediaMode==='lineitems') return r.on ? (+r.amount||0) : 0;
+  if(!r.on || allocBase<=0) return 0;
+  return total * (+r.amount||0)/allocBase;
+}
+function creativeRowTotal(r){ return r.on ? (+r.unit||0)*(+r.qty||0) : 0; }
+function creativeTotal(){ return state.creative.reduce((s,r)=>s+creativeRowTotal(r),0); }
+
+// ---- Render ----------------------------------------------------------------
+function renderSetup(){
+  document.getElementById('projName').value = state.proj.name;
+  document.getElementById('productType').value = state.proj.type;
+  document.getElementById('numLots').value = state.proj.lots;
+  document.getElementById('avgPrice').value = state.proj.price;
+  document.getElementById('months').value = state.proj.months;
+  document.getElementById('grossReal').textContent = money(gross());
+}
+
+function renderMediaControls(){
+  document.querySelectorAll('#mediaApproach button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.mode===state.mediaMode);
+  });
+  document.getElementById('ctrlPercent').style.display = state.mediaMode==='percent' ? '' : 'none';
+  document.getElementById('ctrlFixed').style.display   = state.mediaMode==='fixed'   ? '' : 'none';
+  document.getElementById('mediaPct').value = state.mediaPct;
+  document.getElementById('mediaFixed').value = state.mediaFixed;
+  document.getElementById('mediaCol3').textContent =
+    state.mediaMode==='lineitems' ? 'Amount (total)' : 'Allocated';
+}
+
+function renderMedia(){
+  renderMediaControls();
+  const total = mediaTotal();
+  const allocBase = state.media.filter(r=>r.on).reduce((s,r)=>s+(+r.amount||0),0);
+  const months = +state.proj.months||1;
+  const body = document.getElementById('mediaBody');
+  body.innerHTML = '';
+  const editable = state.mediaMode==='lineitems';
+  state.media.forEach((r,i)=>{
+    const amt = mediaRowAmount(r, total, allocBase);
+    const share = total>0 ? amt/total*100 : 0;
+    const tr = document.createElement('tr');
+    if(!r.on) tr.className='off';
+    tr.innerHTML = `
+      <td><input type="checkbox" class="chk" ${r.on?'checked':''} onchange="upd('media',${i},'on',this.checked)"></td>
+      <td><input type="text" class="desc-input" value="${esc(r.name)}" oninput="upd('media',${i},'name',this.value)">
+        ${ editable ? '' : `<span class="sub">allocated ${money(amt)}</span>` }</td>
+      <td class="num"><input type="number" value="${r.amount}" min="0" step="500" oninput="upd('media',${i},'amount',this.value)"></td>
+      <td class="num pct-cell">${money(amt/months)}</td>
+      <td class="num pct-cell">${pct(share)}</td>
+      <td><button class="del-btn" onclick="delRow('media',${i})" title="Remove">&times;</button></td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById('mediaTotal').textContent = money(total);
+  document.getElementById('mediaMonthly').textContent = money(total/months);
+}
+
+function renderCreative(){
+  const total = creativeTotal();
+  const body = document.getElementById('creativeBody');
+  body.innerHTML='';
+  state.creative.forEach((r,i)=>{
+    const lt = creativeRowTotal(r);
+    const share = total>0 ? lt/total*100 : 0;
+    const tr = document.createElement('tr');
+    if(!r.on) tr.className='off';
+    tr.innerHTML = `
+      <td><input type="checkbox" class="chk" ${r.on?'checked':''} onchange="upd('creative',${i},'on',this.checked)"></td>
+      <td><input type="text" class="desc-input" value="${esc(r.name)}" oninput="upd('creative',${i},'name',this.value)"></td>
+      <td class="num"><input type="number" value="${r.unit}" min="0" step="100" oninput="upd('creative',${i},'unit',this.value)"></td>
+      <td class="num"><input type="number" value="${r.qty}" min="0" step="1" oninput="upd('creative',${i},'qty',this.value)"></td>
+      <td class="num line-total">${money(lt)}</td>
+      <td class="num pct-cell">${pct(share)}</td>
+      <td><button class="del-btn" onclick="delRow('creative',${i})" title="Remove">&times;</button></td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById('creativeTotal').textContent = money(total);
+}
+
+function renderSummary(){
+  const m = mediaTotal(), c = creativeTotal(), t = m+c, g = gross();
+  const lots = +state.proj.lots||0, months = +state.proj.months||1;
+  document.getElementById('summaryProj').textContent =
+    state.proj.name ? state.proj.name + ' • ' + state.proj.type : state.proj.type;
+  document.getElementById('sMedia').textContent = money(m);
+  document.getElementById('sMediaMo').textContent = money(m/months)+' / month over '+months+' mo';
+  document.getElementById('sCreative').textContent = money(c);
+  document.getElementById('sTotal').textContent = money(t);
+  document.getElementById('sTotalPct').textContent = g>0 ? pct(t/g*100)+' of gross realisation' : '—';
+  document.getElementById('sPerLot').textContent = lots>0 ? money(t/lots) : '—';
+  document.getElementById('sPerLotN').textContent = lots+' lots / units';
+
+  const mShare = t>0 ? m/t*100 : 0, cShare = t>0 ? c/t*100 : 0;
+  document.getElementById('sMediaShare').textContent = pct(mShare);
+  document.getElementById('sCreativeShare').textContent = pct(cShare);
+  const bar = document.getElementById('splitBar');
+  bar.innerHTML = `<div class="seg media" style="width:${mShare}%">${mShare>9?'Media':''}</div>`+
+                  `<div class="seg creative" style="width:${cShare}%">${cShare>9?'Creative':''}</div>`;
+
+  // Breakdown table
+  const bt = document.getElementById('breakdownTable');
+  let rows = '<tr><td class="cat" colspan="2">Media channels</td></tr>';
+  const total = m, allocBase = state.media.filter(r=>r.on).reduce((s,r)=>s+(+r.amount||0),0);
+  state.media.filter(r=>r.on).forEach(r=>{
+    rows += `<tr><td>${esc(r.name)}</td><td class="num">${money(mediaRowAmount(r,total,allocBase))}</td></tr>`;
+  });
+  rows += '<tr><td class="cat" colspan="2">Creative deliverables</td></tr>';
+  state.creative.filter(r=>r.on).forEach(r=>{
+    rows += `<tr><td>${esc(r.name)}${(+r.qty||0)>1?` <span style="color:#8899a6">× ${r.qty}`:''}</td><td class="num">${money(creativeRowTotal(r))}</td></tr>`;
+  });
+  rows += `<tr class="total"><td>Total Marketing Spend</td><td class="num">${money(t)}</td></tr>`;
+  bt.innerHTML = rows;
+}
+
+function renderAll(){ renderSetup(); renderMedia(); renderCreative(); renderSummary(); save(); }
+
+// ---- Mutations -------------------------------------------------------------
+function upd(group, i, key, val){
+  if(key==='on') state[group][i].on = val;
+  else if(key==='name') state[group][i].name = val;
+  else state[group][i][key] = (val===''?0:parseFloat(val));
+  // light re-render: only recompute totals/derived, keep focus by not rebuilding edited table fully
+  if(group==='media'){ if(key==='on'||key==='name'){ renderMedia(); } else { recalcMediaTotals(); } }
+  else { recalcCreativeTotals(i); }
+  renderSummary(); save();
+}
+function recalcMediaTotals(){
+  const total=mediaTotal(), months=+state.proj.months||1;
+  document.getElementById('mediaTotal').textContent = money(total);
+  document.getElementById('mediaMonthly').textContent = money(total/months);
+  // update per-row month + % cells without rebuilding inputs
+  const allocBase = state.media.filter(r=>r.on).reduce((s,r)=>s+(+r.amount||0),0);
+  document.querySelectorAll('#mediaBody tr').forEach((tr,i)=>{
+    const amt=mediaRowAmount(state.media[i],total,allocBase);
+    const cells=tr.querySelectorAll('.pct-cell');
+    if(cells[0]) cells[0].textContent=money(amt/months);
+    if(cells[1]) cells[1].textContent=pct(total>0?amt/total*100:0);
+    const sub=tr.querySelector('.sub');
+    if(sub) sub.textContent='allocated '+money(amt);
+  });
+}
+function recalcCreativeTotals(i){
+  const total=creativeTotal();
+  const tr=document.querySelectorAll('#creativeBody tr')[i];
+  if(tr){ tr.querySelector('.line-total').textContent=money(creativeRowTotal(state.creative[i])); }
+  document.querySelectorAll('#creativeBody tr').forEach((row,j)=>{
+    const pc=row.querySelector('.pct-cell');
+    if(pc) pc.textContent=pct(total>0?creativeRowTotal(state.creative[j])/total*100:0);
+  });
+  document.getElementById('creativeTotal').textContent=money(total);
+}
+function addRow(group){
+  if(group==='media') state.media.push({on:true,name:'New channel',amount:0});
+  else state.creative.push({on:true,name:'New deliverable',unit:0,qty:1});
+  group==='media'?renderMedia():renderCreative();
+  renderSummary(); save();
+}
+function delRow(group,i){ state[group].splice(i,1); group==='media'?renderMedia():renderCreative(); renderSummary(); save(); }
+
+function resetAll(){
+  if(!confirm('Reset all inputs back to default values?')) return;
+  state = freshState(); renderAll();
+}
+
+function emailQuote(){
+  const m=mediaTotal(),c=creativeTotal(),t=m+c,g=gross(),lots=+state.proj.lots||0,months=+state.proj.months||1;
+  const L=[];
+  L.push('Project: '+(state.proj.name||'(unnamed)')+' — '+state.proj.type);
+  L.push(lots+' lots/units @ avg '+money(state.proj.price)+'  |  Gross realisation '+money(g));
+  L.push('');
+  L.push('MEDIA SPEND: '+money(m)+'  ('+money(m/months)+'/mo over '+months+' months)');
+  const allocBase=state.media.filter(r=>r.on).reduce((s,r)=>s+(+r.amount||0),0);
+  state.media.filter(r=>r.on).forEach(r=>L.push('  - '+r.name+': '+money(mediaRowAmount(r,m,allocBase))));
+  L.push('');
+  L.push('CREATIVE SPEND: '+money(c));
+  state.creative.filter(r=>r.on).forEach(r=>L.push('  - '+r.name+((+r.qty||0)>1?' x'+r.qty:'')+': '+money(creativeRowTotal(r))));
+  L.push('');
+  L.push('TOTAL MARKETING SPEND: '+money(t)+(g>0?'  ('+pct(t/g*100)+' of GR)':''));
+  if(lots>0) L.push('Cost per lot/unit: '+money(t/lots));
+  L.push('');
+  L.push('Indicative estimate, ex GST. Subject to formal proposal. — ProjX');
+  const subj='Marketing spend estimate'+(state.proj.name?' — '+state.proj.name:'');
+  location.href='mailto:?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(L.join('\n'));
+}
+
+function esc(s){ return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ---- Wiring ----------------------------------------------------------------
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+  if(t.dataset.tab==='summary') renderSummary();
+}));
+
+document.querySelectorAll('#mediaApproach button').forEach(b=>b.addEventListener('click',()=>{
+  state.mediaMode=b.dataset.mode; renderMedia(); renderSummary(); save();
+}));
+
+function bindProj(id,key,isNum){
+  document.getElementById(id).addEventListener('input',e=>{
+    state.proj[key]= isNum ? (e.target.value===''?0:parseFloat(e.target.value)) : e.target.value;
+    document.getElementById('grossReal').textContent=money(gross());
+    if(['lots','price','months'].includes(key)){ recalcMediaTotals(); }
+    renderSummary(); save();
+  });
+}
+bindProj('projName','name',false);
+bindProj('productType','type',false);
+bindProj('numLots','lots',true);
+bindProj('avgPrice','price',true);
+bindProj('months','months',true);
+document.getElementById('mediaPct').addEventListener('input',e=>{state.mediaPct=parseFloat(e.target.value)||0;recalcMediaTotals();renderSummary();save();});
+document.getElementById('mediaFixed').addEventListener('input',e=>{state.mediaFixed=parseFloat(e.target.value)||0;recalcMediaTotals();renderSummary();save();});
+
+renderAll();
+</script>
+</body>
+</html>

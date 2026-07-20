@@ -4,3 +4,8 @@ assets/
 __pycache__/
 *.pyc
 .env
+
+# Node / Green Room app
+node_modules/
+npm-debug.log*
+.DS_Store

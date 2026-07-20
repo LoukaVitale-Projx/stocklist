@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Green Room · Urbanity-26 Panel Practice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ==================== GREEN ROOM (mode select) ==================== -->
+  <section id="green-room" class="screen green-room">
+    <div class="gr-inner">
+      <p class="kicker">Urbanity-26 · The Star, Gold Coast</p>
+      <h1 class="display">Green<br />Room</h1>
+      <p class="subtitle">
+        Rehearse "The Outperformers" panel with Adam Di Marco.<br />
+        Pick a drill to walk on stage.
+      </p>
+
+      <div class="mode-cards">
+        <button class="mode-card" data-mode="full" type="button">
+          <span class="mode-title">Full panel run</span>
+          <span class="mode-desc">The six official prompts, in order, with natural follow-ups and panellist beats.</span>
+        </button>
+        <button class="mode-card" data-mode="rapid" type="button">
+          <span class="mode-title">Rapid fire</span>
+          <span class="mode-desc">Random prompts, maximum pace, pushed for concision. No preamble.</span>
+        </button>
+        <button class="mode-card" data-mode="curveballs" type="button">
+          <span class="mode-title">Curveballs</span>
+          <span class="mode-desc">Off-brief probing — rates, costs, bubble talk, AI-hype scepticism, audience questions.</span>
+        </button>
+      </div>
+
+      <p class="mute-hint" id="mute-hint">
+        🔊 Tip: speech respects your phone's silent switch — flick it off to hear Adam.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================== CHAT ==================== -->
+  <section id="chat-screen" class="screen chat-screen hidden">
+    <header class="chat-header">
+      <button class="icon-btn" id="back-btn" type="button" aria-label="Back to Green Room">‹</button>
+      <div class="header-mid">
+        <span class="header-title" id="mode-label">FULL RUN</span>
+        <span class="timer-wrap">
+          <span class="live-dot" id="live-dot" aria-hidden="true"></span>
+          <span class="timer" id="timer">0s</span>
+        </span>
+      </div>
+      <button class="voice-toggle" id="voice-toggle" type="button" aria-pressed="true">Voice on</button>
+    </header>
+
+    <div class="messages" id="messages" aria-live="polite"></div>
+
+    <div class="composer">
+      <div class="composer-row">
+        <textarea
+          id="input"
+          class="input"
+          rows="1"
+          placeholder="Answer Adam… (or dictate with the mic key)"
+          autocomplete="off"
+        ></textarea>
+        <button class="send-btn" id="send-btn" type="button">Send</button>
+      </div>
+      <div class="composer-actions">
+        <button class="secondary-btn" id="coach-btn" type="button">Get coach feedback</button>
+        <button class="secondary-btn danger" id="end-btn" type="button">End session</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
